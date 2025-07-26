@@ -8,7 +8,7 @@ import { choice, get_backpack, get_fish_price, get_fishing_stats, get_quality_di
 export { Config } from "./config";
 export const name = "fishing";
 export const inject = {
-    required: ["database"],
+    required: ["database", "coin"],
     optional: ["fortune"]
 };
 
