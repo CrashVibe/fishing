@@ -3,8 +3,8 @@ import {} from "koishi-plugin-rate-limit";
 import { Config } from "./config";
 import { applyModel } from "./model";
 import {} from "koishi-plugin-adapter-onebot";
-
-import { choice, get_backpack, get_fishing_stats, get_quality_display, save_fish } from "./data_source";
+import {} from "@u1bot/koishi-plugin-coin";
+import { choice, get_backpack, get_fish_price, get_fishing_stats, get_quality_display, save_fish } from "./data_source";
 export { Config } from "./config";
 export const name = "fishing";
 export const inject = {
@@ -49,6 +49,9 @@ export async function apply(ctx: Context, config: Config) {
             throw new Error("无法获取用户信息");
         }
         const backpack = await get_backpack(ctx, session.userId);
+        if (Object.keys(backpack).length === 0) {
+            return h.quote(session.messageId) + "* 你的背包装满了空气";
+        }
         const msgList: string[] = [];
         msgList.push("你的背包中有以下鱼：\n");
         for (const [quality, fishes] of Object.entries(backpack)) {
@@ -93,15 +96,44 @@ export async function apply(ctx: Context, config: Config) {
                 throw new Error("无法获取用户信息");
             }
             if (!session.guildId || !session.channel) {
-                return "怎么啦，你要控制自己不要钓鱼嘛";
+                return h.quote(session.messageId) + "怎么啦，你要控制自己不要钓鱼嘛";
             }
             if (!session.onebot) {
-                return "暂不支持非 OneBot 适配器的钓鱼开关";
+                return h.quote(session.messageId) + "暂不支持非 OneBot 适配器的钓鱼开关";
             }
             if (session.onebot?.sender.role !== "admin" && session.onebot?.sender.role !== "owner") {
-                return "你没有权限设置钓鱼开关";
+                return h.quote(session.messageId) + "你没有权限设置钓鱼开关";
             }
             session.channel.fishing_switch = !session.channel.fishing_switch;
-            return `钓鱼开关已${session.channel.fishing_switch ? "打开" : "关闭"}`;
+            return h.quote(session.messageId) + `钓鱼开关已${session.channel.fishing_switch ? "打开" : "关闭"}`;
         });
+    ctx.command("卖鱼 <name>", "卖掉一条鱼").action(async ({ session }, name: string) => {
+        if (!session || !session.userId) {
+            throw new Error("无法获取用户信息");
+        }
+        if (!name) {
+            return h.quote(session.messageId) + "请输入要卖掉的鱼的名称";
+        }
+        const record = await ctx.database.get("fishing_record", { user_id: session.userId });
+        if (record.length === 0) {
+            return h.quote(session.messageId) + "没鱼还想卖鱼？！";
+        }
+        const { fishes } = record[0];
+        const fishIndex = fishes.findIndex((fish) => fish.name === name);
+        if (fishIndex === -1) {
+            return h.quote(session.messageId) + `你没有名为 "${name}" 的鱼`;
+        }
+        const fish = fishes[fishIndex];
+        const price = get_fish_price(fish, config);
+        fishes.splice(fishIndex, 1);
+        await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes });
+        await ctx.coin.adjustCoin(session.userId, price, "卖鱼");
+        return (
+            h.quote(session.messageId) +
+            `* 你卖掉了一条 ${get_quality_display(fish.quality, config)} ${fish.name}，长度为 ${
+                fish.length
+            }cm，获得了 ${price.toFixed(2)} 次元币`
+        );
+    });
 }
+1;

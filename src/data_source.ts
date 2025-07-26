@@ -197,6 +197,17 @@ export function get_quality_display(quality: string, config: Config): string {
             return quality;
     }
 }
+export function get_fish_price(fish: Fish, config: Config): number {
+    const quality_config = map_quality_to_config([
+        config.rotten,
+        config.moldy,
+        config.common,
+        config.golden,
+        config.void,
+        config.hidden_fire
+    ])[fish.quality];
+    return fish.length * quality_config.price;
+}
 
 export async function get_backpack(ctx: Context, userId: string) {
     // 按照鱼的品质分组
