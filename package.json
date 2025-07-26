@@ -1,0 +1,24 @@
+{
+  "name": "@u1bot/koishi-plugin-fishing",
+  "description": "钓鱼",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.18.7"
+  },
+  "devDependencies": {
+    "@u1bot/koishi-plugin-fortune": "workspace:^",
+    "koishi-plugin-rate-limit": "^2.0.4"
+  }
+}
