@@ -18,30 +18,33 @@ export async function apply(ctx: Context, config: Config) {
         .channelFields(["fishing_switch"])
         .alias("钓鱼")
         .action(async ({ session }) => {
-            if (!session || !session.messageId) {
-                throw new Error("无法获取会话信息");
-            }
-            if (session.channel && session.channel.fishing_switch === false) {
-                return "此群钓鱼功能已被禁用，请联系管理员开启";
-            }
-            await session.send(h.quote(session.messageId) + "甩杆ing...");
-            const fish = await choice(ctx, session, config);
-            const waitTime = Math.floor(Math.random() * 6 + 1) * 1000;
-            await new Promise((resolve) => setTimeout(resolve, waitTime));
-            let result = `* 你钓到了一条 ${get_quality_display(fish.fish.quality, config)} ${fish.fish.name}，长度为 ${
-                fish.fish.length
-            }cm！`;
-            if (fish.fish.name == "河") {
-                result = "* 河累了，休息..等等...你钓到了一条河？！";
-            } else if (fish.fish.name == "尚方宝剑") {
-                result = `* 你钓到了一把 ${get_quality_display(fish.fish.quality, config)} ${fish.fish.name}，长度为 ${
-                    fish.fish.length
-                }cm！`;
-            } else if (fish.fish.name == "MrlingXD") {
-                result = `* 你钓到了一条...呃我没看错吧？！这是 MrlingXD 吗？`;
-            }
-            await save_fish(ctx, session, fish.fish);
-            return h.quote(session.messageId) + result;
+            (async () => {
+                if (!session || !session.messageId) {
+                    throw new Error("无法获取会话信息");
+                }
+                if (session.channel && session.channel.fishing_switch === false) {
+                    return "此群钓鱼功能已被禁用，请联系管理员开启";
+                }
+                await session.send(h.quote(session.messageId) + "甩杆ing...");
+                const fish = await choice(ctx, session, config);
+                const waitTime = Math.floor(Math.random() * 6 + 1) * 1000;
+                await new Promise((resolve) => setTimeout(resolve, waitTime));
+                let result = `* 你钓到了一条 ${get_quality_display(fish.fish.quality, config)} ${
+                    fish.fish.name
+                }，长度为 ${fish.fish.length}cm！`;
+                if (fish.fish.name == "河") {
+                    result = "* 河累了，休息..等等...你钓到了一条河？！";
+                } else if (fish.fish.name == "尚方宝剑") {
+                    result = `* 你钓到了一把 ${get_quality_display(fish.fish.quality, config)} ${
+                        fish.fish.name
+                    }，长度为 ${fish.fish.length}cm！`;
+                } else if (fish.fish.name == "MrlingXD") {
+                    result = `* 你钓到了一条...呃我没看错吧？！这是 MrlingXD 吗？`;
+                }
+                await save_fish(ctx, session, fish.fish);
+                await session.send(h.quote(session.messageId) + result);
+            })();
+            return;
         });
 
     ctx.command("背包", "查看背包中的鱼").action(async ({ session }) => {
