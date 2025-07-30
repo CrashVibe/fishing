@@ -29,13 +29,13 @@ export async function apply(ctx: Context, config: Config) {
                 const fish = await choice(ctx, session, config);
                 const waitTime = Math.floor(Math.random() * 6 + 1) * 1000;
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
-                let result = `* 你钓到了一条 ${get_quality_display(fish.fish.quality, config)} ${
+                let result = `* 你钓到了一条 [${get_quality_display(fish.fish.quality, config)}]${
                     fish.fish.name
                 }，长度为 ${fish.fish.length}cm！`;
                 if (fish.fish.name == "河") {
                     result = "* 河累了，休息..等等...你钓到了一条河？！";
                 } else if (fish.fish.name == "尚方宝剑") {
-                    result = `* 你钓到了一把 ${get_quality_display(fish.fish.quality, config)} ${
+                    result = `* 你钓到了一把 [${get_quality_display(fish.fish.quality, config)}]${
                         fish.fish.name
                     }，长度为 ${fish.fish.length}cm！`;
                 } else if (fish.fish.name == "MrlingXD") {
