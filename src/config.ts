@@ -217,7 +217,7 @@ export const Config: Schema<Config> = Schema.object({
     }),
     hidden_fire: Schema.object({
         name: Schema.string().default("hidden_fire"),
-        display: Schema.string().default("隐火火鱼").description("隐火火鱼品质名称"),
+        display: Schema.string().default("隐火").description("隐火鱼品质名称"),
         weight: Schema.number().default(1).description("权重，越大越容易钓到"),
         price: Schema.number().default(0.2).description("钓到隐火的价格"),
         long: Schema.tuple([Number, Number]).default([1000, 4000]).description("钓到隐火的长度范围"),
