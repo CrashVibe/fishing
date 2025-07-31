@@ -135,10 +135,14 @@ export async function apply(ctx: Context, config: Config) {
         const { fishes } = record[0];
 
         if (name === "全部") {
+            const totalCount = fishes.length;
             const totalPrice = fishes.reduce((sum, fish) => sum + get_fish_price(fish, config), 0);
             await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes: [] });
             await ctx.coin.adjustCoin(session.userId, totalPrice, "卖全部鱼");
-            return h.quote(session.messageId) + `你卖掉了所有鱼，获得了 ${totalPrice.toFixed(2)} 次元币`;
+            return (
+                h.quote(session.messageId) +
+                `你卖掉了所有鱼（共 ${totalCount} 条），获得了 ${totalPrice.toFixed(2)} 次元币`
+            );
         }
 
         let fishIndex = -1;
