@@ -194,9 +194,29 @@ export function get_quality_display(quality: string, config: Config): string {
         case "hidden_fire":
             return config.hidden_fire.display;
         default:
-            return quality;
+            throw new Error(`未知的鱼品质: ${quality}`);
     }
 }
+
+export function get_display_quality(quality_name: string, config: Config): FishQuality {
+    switch (quality_name) {
+        case config.rotten.display:
+            return FishQuality.rotten;
+        case config.moldy.display:
+            return FishQuality.moldy;
+        case config.common.display:
+            return FishQuality.common;
+        case config.golden.display:
+            return FishQuality.golden;
+        case config.void.display:
+            return FishQuality.void;
+        case config.hidden_fire.display:
+            return FishQuality.hidden_fire;
+        default:
+            throw new Error(`未知的鱼品质名称: ${quality_name}`);
+    }
+}
+
 export function get_fish_price(fish: Fish, config: Config): number {
     const quality_config = map_quality_to_config([
         config.rotten,
@@ -222,7 +242,7 @@ export async function get_backpack(ctx: Context, userId: string) {
             hidden_fire: []
         };
     }
-    const {fishes} = record[0];
+    const { fishes } = record[0];
     const grouped: Record<FishQuality, Fish[]> = {
         rotten: [],
         moldy: [],

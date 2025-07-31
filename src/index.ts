@@ -4,7 +4,15 @@ import { Config } from "./config";
 import { applyModel } from "./model";
 import {} from "koishi-plugin-adapter-onebot";
 import {} from "@u1bot/koishi-plugin-coin";
-import { choice, get_backpack, get_fish_price, get_fishing_stats, get_quality_display, save_fish } from "./data_source";
+import {
+    choice,
+    get_backpack,
+    get_display_quality,
+    get_fish_price,
+    get_fishing_stats,
+    get_quality_display,
+    save_fish
+} from "./data_source";
 export { Config } from "./config";
 export const name = "fishing";
 export const inject = {
@@ -111,26 +119,47 @@ export async function apply(ctx: Context, config: Config) {
             return h.quote(session.messageId) + `钓鱼开关已${session.channel.fishing_switch ? "打开" : "关闭"}`;
         });
     ctx.command("卖鱼 <name>", "卖掉一条鱼").action(async ({ session }, name: string) => {
-        if (!session || !session.userId) {
+        if (!session?.userId) {
             throw new Error("无法获取用户信息");
         }
+
         if (!name) {
             return h.quote(session.messageId) + "请输入要卖掉的鱼的名称";
         }
+
         const record = await ctx.database.get("fishing_record", { user_id: session.userId });
         if (record.length === 0) {
             return h.quote(session.messageId) + "没鱼还想卖鱼？！";
         }
+
         const { fishes } = record[0];
-        const fishIndex = fishes.findIndex((fish) => fish.name === name);
+
+        if (name === "全部") {
+            const totalPrice = fishes.reduce((sum, fish) => sum + get_fish_price(fish, config), 0);
+            await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes: [] });
+            await ctx.coin.adjustCoin(session.userId, totalPrice, "卖全部鱼");
+            return h.quote(session.messageId) + `你卖掉了所有鱼，获得了 ${totalPrice.toFixed(2)} 次元币`;
+        }
+
+        let fishIndex = -1;
+        try {
+            const quality = get_display_quality(name, config);
+            fishIndex = fishes.findIndex((fish) => fish.quality === quality);
+        } catch {
+            fishIndex = fishes.findIndex((fish) => fish.name === name);
+        }
+
         if (fishIndex === -1) {
             return h.quote(session.messageId) + `你没有名为 "${name}" 的鱼`;
         }
+
         const fish = fishes[fishIndex];
         const price = get_fish_price(fish, config);
+
         fishes.splice(fishIndex, 1);
         await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes });
-        await ctx.coin.adjustCoin(session.userId, price, "卖鱼");
+        await ctx.coin.adjustCoin(session.userId, price, `卖鱼 [${fish.quality}]${fish.name}`);
+
         return (
             h.quote(session.messageId) +
             `* 你卖掉了一条 ${get_quality_display(fish.quality, config)} ${fish.name}，长度为 ${
@@ -139,4 +168,3 @@ export async function apply(ctx: Context, config: Config) {
         );
     });
 }
-1;
