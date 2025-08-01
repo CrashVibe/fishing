@@ -25,7 +25,7 @@ export const inject = {
 
 export async function apply(ctx: Context, config: Config) {
     applyModel(ctx);
-    ctx.command("fishing", "就是钓鱼")
+    ctx.command("fishing", "就是钓鱼", { minInterval: config.fishing_cooldown * 1000 })
         .channelFields(["fishing_switch"])
         .alias("钓鱼")
         .action(async ({ session }) => {
