@@ -11,8 +11,11 @@ import {
     get_fish_price,
     get_fishing_stats,
     get_quality_display,
-    save_fish
+    save_fish,
+    get_user_fishing_rod_info,
+    get_fish_info
 } from "./data_source";
+import { getFishingRodProgress, getFishingRodDisplay } from "./fishing_rod";
 export { Config } from "./config";
 export const name = "fishing";
 export const inject = {
@@ -22,7 +25,7 @@ export const inject = {
 
 export async function apply(ctx: Context, config: Config) {
     applyModel(ctx);
-    ctx.command("fishing", "就是钓鱼", { minInterval: config.fishing_cooldown * 1000 })
+    ctx.command("fishing", "就是钓鱼")
         .channelFields(["fishing_switch"])
         .alias("钓鱼")
         .action(async ({ session }) => {
@@ -37,20 +40,49 @@ export async function apply(ctx: Context, config: Config) {
                 const fish = await choice(ctx, session, config);
                 const waitTime = Math.floor(Math.random() * 6 + 1) * 1000;
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
-                let result = `* 你钓到了一条 [${get_quality_display(fish.fish.quality, config)}]${
-                    fish.fish.name
-                }，长度为 ${fish.fish.length}cm！`;
-                if (fish.fish.name == "河") {
+
+                // 获取鱼类信息用于特殊描述
+                const fishInfo = get_fish_info(fish.fish.name, fish.fish.quality);
+
+                let result = "";
+
+                // 检查是否有特殊描述（prompt）
+                if (fishInfo && fishInfo.prompt) {
+                    result = `* 你钓到了一条 [${get_quality_display(fish.fish.quality)}]${fish.fish.name}，长度为 ${
+                        fish.fish.length
+                    }cm！`;
+                    result += "\n" + fishInfo.prompt;
+                } else if (fish.fish.name == "河") {
                     result = "* 河累了，休息..等等...你钓到了一条河？！";
                 } else if (fish.fish.name == "尚方宝剑") {
-                    result = `* 你钓到了一把 [${get_quality_display(fish.fish.quality, config)}]${
-                        fish.fish.name
-                    }，长度为 ${fish.fish.length}cm！`;
+                    result = `* 你钓到了一把 [${get_quality_display(fish.fish.quality)}]${fish.fish.name}，长度为 ${
+                        fish.fish.length
+                    }cm！`;
                 } else if (fish.fish.name == "MrlingXD") {
                     result = `* 你钓到了一条...呃我没看错吧？！这是 MrlingXD 吗？`;
+                } else {
+                    result = `* 你钓到了一条 [${get_quality_display(fish.fish.quality)}]${fish.fish.name}，长度为 ${
+                        fish.fish.length
+                    }cm！`;
                 }
-                await save_fish(ctx, session, fish.fish);
-                await session.send(h.quote(session.messageId) + result);
+
+                const fishingResult = await save_fish(ctx, session, fish.fish, config);
+
+                let fullResult = result;
+
+                if (fishingResult.upgraded) {
+                    fullResult += `\n你的鱼竿升级到了 [${getFishingRodDisplay(
+                        fishingResult.newLevel!,
+                        config
+                    )}] 等级！`;
+                } else if (fishingResult.downgraded) {
+                    fullResult += `\n${fishingResult.downgradeReason}，你的鱼竿降级到了 [${getFishingRodDisplay(
+                        fishingResult.newLevel!,
+                        config
+                    )}] 等级...`;
+                }
+
+                await session.send(h.quote(session.messageId) + fullResult);
             })();
             return;
         });
@@ -69,7 +101,7 @@ export async function apply(ctx: Context, config: Config) {
             if (fishes.length === 0) {
                 continue;
             }
-            const qualityDisplay = `${get_quality_display(quality, config)}：\n${fishes.join("\n")}\n`;
+            const qualityDisplay = `${get_quality_display(quality)}：\n${fishes.join("\n")}\n`;
             msgList.push(qualityDisplay);
         }
         if (session.onebot) {
@@ -95,11 +127,67 @@ export async function apply(ctx: Context, config: Config) {
             throw new Error("无法获取用户信息");
         }
         const stats = await get_fishing_stats(ctx, session.userId);
+        const rodInfo = await get_user_fishing_rod_info(ctx, session.userId, config);
+        const progress = getFishingRodProgress(
+            {
+                fishing_rod_level: stats.fishing_rod_level,
+                total_fishing_count: stats.total_fishing_count
+            } as any,
+            config
+        );
+
+        let progressText = "";
+        if (progress.next) {
+            progressText = `\n- 升级进度：${progress.progress}/${progress.nextRequirement} (下一级：${progress.next})`;
+        } else {
+            progressText = `\n- 已达到最高等级！`;
+        }
+
         return `你的钓鱼统计信息：
 - 总钓鱼次数：${stats.frequency}
 - 背包中的鱼总长：${stats.fishes.reduce((sum, fish) => sum + fish.length, 0)}cm
+- 当前鱼竿：[${rodInfo.display}] 等级${progressText}
+- 连续倒霉次数：${stats.consecutive_bad_count}
         `;
     });
+
+    ctx.command("鱼竿", "查看鱼竿信息")
+        .alias("我的鱼竿")
+        .action(async ({ session }) => {
+            if (!session || !session.userId) {
+                throw new Error("无法获取用户信息");
+            }
+
+            const rodInfo = await get_user_fishing_rod_info(ctx, session.userId, config);
+            const progress = getFishingRodProgress(
+                {
+                    fishing_rod_level: rodInfo.level,
+                    total_fishing_count: rodInfo.total_fishing_count
+                } as any,
+                config
+            );
+
+            let progressText = "";
+            if (progress.next) {
+                const remaining = progress.nextRequirement - progress.progress;
+                progressText = `\n升级进度：${progress.progress}/${progress.nextRequirement}\n还需钓鱼：${remaining} 次可升级到 [${progress.next}]`;
+            } else {
+                progressText = `\n已达到最高等级！恭喜你成为钓鱼大师！`;
+            }
+
+            const rodConfig = config.fishing_rods[rodInfo.level];
+            const bonusText = Object.entries(rodConfig.quality_bonus)
+                .map(([quality, bonus]) => `${get_quality_display(quality)}: ${(bonus * 100).toFixed(0)}%`)
+                .join(", ");
+
+            return (
+                h.quote(session.messageId) +
+                `你的鱼竿信息：
+当前等级：[${rodInfo.display}]${progressText}
+品质加成：${bonusText}
+特殊鱼加成：${(rodConfig.special_fish_bonus * 100).toFixed(0)}%`
+            );
+        });
     ctx.command("钓鱼开关", "查看或设置钓鱼开关")
         .channelFields(["fishing_switch"])
         .action(async ({ session }) => {
@@ -136,7 +224,7 @@ export async function apply(ctx: Context, config: Config) {
 
         if (name === "全部") {
             const totalCount = fishes.length;
-            const totalPrice = fishes.reduce((sum, fish) => sum + get_fish_price(fish, config), 0);
+            const totalPrice = fishes.reduce((sum, fish) => sum + get_fish_price(fish), 0);
             await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes: [] });
             await ctx.coin.adjustCoin(session.userId, totalPrice, "卖全部鱼");
             return (
@@ -147,7 +235,7 @@ export async function apply(ctx: Context, config: Config) {
 
         let fishIndex = -1;
         try {
-            const quality = get_display_quality(name, config);
+            const quality = get_display_quality(name);
             fishIndex = fishes.findIndex((fish) => fish.quality === quality);
         } catch {
             fishIndex = fishes.findIndex((fish) => fish.name === name);
@@ -158,7 +246,7 @@ export async function apply(ctx: Context, config: Config) {
         }
 
         const fish = fishes[fishIndex];
-        const price = get_fish_price(fish, config);
+        const price = get_fish_price(fish);
 
         fishes.splice(fishIndex, 1);
         await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes });
@@ -166,7 +254,7 @@ export async function apply(ctx: Context, config: Config) {
 
         return (
             h.quote(session.messageId) +
-            `* 你卖掉了一条 [${get_quality_display(fish.quality, config)}]${fish.name}，长度为 ${
+            `* 你卖掉了一条 [${get_quality_display(fish.quality)}]${fish.name}，长度为 ${
                 fish.length
             }cm，获得了 ${price.toFixed(2)} 次元币`
         );
