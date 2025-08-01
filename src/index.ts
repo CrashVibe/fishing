@@ -96,12 +96,12 @@ export async function apply(ctx: Context, config: Config) {
             return h.quote(session.messageId) + "* 你的背包装满了空气";
         }
         const msgList: string[] = [];
-        msgList.push("你的背包中有以下鱼：\n");
+        msgList.push("你的背包中有以下鱼：");
         for (const [quality, fishes] of Object.entries(backpack)) {
             if (fishes.length === 0) {
                 continue;
             }
-            const qualityDisplay = `${get_quality_display(quality)}：\n${fishes.join("\n")}\n`;
+            const qualityDisplay = `${get_quality_display(quality)}：\n${fishes.join("\n")}`;
             msgList.push(qualityDisplay);
         }
         if (session.onebot) {
