@@ -166,7 +166,7 @@ export async function apply(ctx: Context, config: Config) {
 
         return (
             h.quote(session.messageId) +
-            `* 你卖掉了一条 ${get_quality_display(fish.quality, config)} ${fish.name}，长度为 ${
+            `* 你卖掉了一条 [${get_quality_display(fish.quality, config)}]${fish.name}，长度为 ${
                 fish.length
             }cm，获得了 ${price.toFixed(2)} 次元币`
         );
