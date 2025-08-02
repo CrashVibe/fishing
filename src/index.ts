@@ -34,7 +34,7 @@ export async function apply(ctx: Context, config: Config) {
                     throw new Error("无法获取会话信息");
                 }
                 if (session.channel && session.channel.fishing_switch === false) {
-                    return "此群钓鱼功能已被禁用，请联系管理员开启";
+                    await session.send("此群钓鱼功能已被禁用，请联系管理员开启");
                 }
                 await session.send(h.quote(session.messageId) + "甩杆ing...");
                 const fish = await choice(ctx, session, config);
