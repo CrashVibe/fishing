@@ -229,20 +229,38 @@ export async function apply(ctx: Context, config: Config) {
             await ctx.coin.adjustCoin(session.userId, totalPrice, "卖全部鱼");
             return (
                 h.quote(session.messageId) +
-                `你卖掉了所有鱼（共 ${totalCount} 条），获得了 ${totalPrice.toFixed(2)} 次元币`
+                `* 你卖掉了所有鱼（共 ${totalCount} 条），获得了 ${totalPrice.toFixed(2)} 次元币`
             );
         }
 
         let fishIndex = -1;
         try {
             const quality = get_display_quality(name);
-            fishIndex = fishes.findIndex((fish) => fish.quality === quality);
+            const qualityFishes = fishes.filter((fish) => fish.quality === quality);
+            if (qualityFishes.length === 0) {
+                return h.quote(session.messageId) + `* 你没有品质为 "${get_quality_display(quality)}" 的鱼`;
+            }
+            const totalCount = qualityFishes.length;
+            const totalPrice = qualityFishes.reduce((sum, fish) => sum + get_fish_price(fish), 0);
+            const newFishes = fishes.filter((fish) => fish.quality !== quality);
+            await ctx.database.set("fishing_record", { user_id: session.userId }, { fishes: newFishes });
+            await ctx.coin.adjustCoin(
+                session.userId,
+                totalPrice,
+                `卖掉全部品质为 [${get_quality_display(quality)}] 的鱼`
+            );
+            return (
+                h.quote(session.messageId) +
+                `* 你卖掉了所有品质为 [${get_quality_display(
+                    quality
+                )}] 的鱼（共 ${totalCount} 条），获得了 ${totalPrice.toFixed(2)} 次元币`
+            );
         } catch {
             fishIndex = fishes.findIndex((fish) => fish.name === name);
         }
 
         if (fishIndex === -1) {
-            return h.quote(session.messageId) + `你没有名为 "${name}" 的鱼`;
+            return h.quote(session.messageId) + `* 你没有名为 "${name}" 的鱼`;
         }
 
         const fish = fishes[fishIndex];
