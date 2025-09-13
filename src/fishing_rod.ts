@@ -1,4 +1,3 @@
-import { Context } from "koishi";
 import { Config, FishingRodLevel, FishQuality } from "./config";
 import { FishingRecordModel } from "./model";
 
