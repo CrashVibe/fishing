@@ -1,5 +1,5 @@
 import {} from "@u1bot/koishi-plugin-coin";
-import { readFile } from "fs/promises";
+import { readFileSync } from "fs";
 import { Context, h } from "koishi";
 import {} from "koishi-plugin-adapter-onebot";
 import {} from "koishi-plugin-rate-limit";
@@ -25,6 +25,10 @@ export const inject = {
     optional: ["fortune"]
 };
 
+const fishingImagePath = join(__dirname, "assets", "fishing.png");
+const fishingImageBuffer = readFileSync(fishingImagePath);
+const fishingImageBase64 = `data:image/png;base64,${fishingImageBuffer.toString("base64")}`;
+
 export async function apply(ctx: Context, config: Config) {
     await applyModel(ctx);
     ctx.command("fishing", "就是钓鱼", { minInterval: config.fishing_cooldown * 1000 })
@@ -40,11 +44,6 @@ export async function apply(ctx: Context, config: Config) {
                         await session.send("此群钓鱼功能已被禁用，请联系管理员开启");
                         return;
                     }
-
-                    // 转换base64
-                    const fishingImagePath = join(__dirname, "assets", "fishing.png");
-                    const fishingImageBuffer = await readFile(fishingImagePath);
-                    const fishingImageBase64 = `data:image/png;base64,${fishingImageBuffer.toString("base64")}`;
 
                     await session.send([h.quote(session.messageId), h.image(fishingImageBase64)]);
                     const fish = await choice(ctx, session, config);
