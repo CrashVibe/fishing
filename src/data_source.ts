@@ -18,7 +18,7 @@ export async function choice(ctx: Context, session: Session, config: Config) {
 
     const { weight, adjustment_mode, luck_star_num, fishing_rod_level } = await get_weight(ctx, config, session.userId);
 
-    // 加权随机选择鱼品质
+    // 加权随机
     const fish_quality = weighted_choice(Object.values(FishQuality), Object.values(weight));
 
     // 获取该品质对应的配置

@@ -1,61 +1,95 @@
 import { Schema } from "koishi";
 
 export enum FishQuality {
+    /** 腐烂品质 */
     rotten = "rotten",
+    /** 发霉品质 */
     moldy = "moldy",
+    /** 普通品质 */
     common = "common",
+    /** 金品质 */
     golden = "golden",
+    /** 虚空品质 */
     void = "void",
+    /** 隐火品质 */
     hidden_fire = "hidden_fire"
 }
 
 export enum FishingRodLevel {
+    /** 普通鱼竿 */
     normal = "normal",
+    /** 银鱼竿 */
     silver = "silver",
+    /** 金鱼竿 */
     gold = "gold",
+    /** 圣物鱼竿 */
     holy = "holy",
+    /** 虚空鱼竿*/
     void = "void"
 }
 
 export interface FishingRodConfig {
+    /** 鱼竿内部标识符 */
     name: string;
+    /** 鱼竿显示名称 */
     display: string;
-    upgrade_requirement: number; // 升级所需钓鱼次数
-    quality_bonus: Record<FishQuality, number>; // 品质加成系数
-    downgrade_probability: number; // 基础降级概率
-    special_fish_bonus: number; // 特殊鱼类概率加成
+    /**  升级所需钓鱼次数 */
+    upgrade_requirement: number;
+    /** 品质加成系数 */
+    quality_bonus: Record<FishQuality, number>;
+    /** 基础降级概率 */
+    downgrade_probability: number;
+    /** 特殊鱼类概率加成 */
+    special_fish_bonus: number;
 }
-
 export interface FishInfo {
+    /** 鱼的名称 */
     name: string;
-    prompt?: string; // 特殊描述，如果有则优先显示
+    /** 特殊描述，如果有则优先显示 */
+    prompt?: string;
 }
 
 export interface QualityConfig {
+    /** 品质内部标识符 */
     name: string;
+    /** 品质显示名称 */
     display: string;
+    /** 品质权重 */
     weight: number;
+    /** 鱼的价格系数 */
     price: number;
+    /** 鱼的长度范围 [最小, 最大] */
     lengthRange: [number, number];
+    /** 该品质等级的鱼类列表 */
     fishes: FishInfo[];
 }
 
 export interface Fish {
+    /** 鱼的名称 */
     name: string;
+    /** 鱼的品质等级 */
     quality: FishQuality;
+    /** 鱼的长度 */
     length: number;
 }
 
 export interface Config {
+    /** 基础权重增加值 (指数函数) */
     base_weight_increase: number;
+    /** 最大权重，超过此值将被限制 */
     max_weight: number;
+    /** 钓鱼冷却时间，单位秒 */
     fishing_cooldown: number;
-    // 鱼竿相关配置
+    /** 鱼竿等级配置 */
     fishing_rods: Record<FishingRodLevel, FishingRodConfig>;
+    /** 鱼竿降级事件配置 */
     downgrade_events: {
-        bad_fish_names: string[]; // 导致降级的倒霉鱼名称
-        consecutive_bad_threshold: number; // 连续钓到低品质鱼的降级阈值
-        inactivity_days: number; // 不活跃天数导致降级
+        /** 导致降级的倒霉鱼名称 */
+        bad_fish_names: string[];
+        /** 连续钓到低品质鱼的降级阈值 */
+        consecutive_bad_threshold: number;
+        /** 不活跃天数导致降级 */
+        inactivity_days: number;
     };
 }
 
@@ -233,10 +267,10 @@ export const FISH_CONFIG: Record<FishQuality, QualityConfig> = {
         price: 0.1,
         lengthRange: [1, 30],
         fishes: [
-            { name: "尚方宝剑" }, // 保留原有特殊逻辑
+            { name: "尚方宝剑" },
             { name: "丁真鱼", prompt: "* 理塘的丁真，为你献上最纯真的鱼！" },
             { name: "鱼", prompt: "* 这条鱼在水中自由自在地游动，仿佛在享受生活" },
-            { name: "河" }, // 保留原有特殊逻辑
+            { name: "河" },
             { name: "阳光开朗鱼", prompt: "* 这条鱼总是很乐观，感染了你的心情！" },
             { name: "转运锦鲤" },
             { name: "海底捞水母" },
