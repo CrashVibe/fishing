@@ -1,7 +1,8 @@
+import {} from "@koishijs/plugin-adapter-onebot";
+import {} from "@koishijs/plugin-adapter-qq";
 import {} from "@u1bot/koishi-plugin-coin";
 import { readFileSync } from "fs";
 import { Context, h } from "koishi";
-import {} from "koishi-plugin-adapter-onebot";
 import {} from "koishi-plugin-rate-limit";
 import { join } from "path";
 import { Config } from "./config";
@@ -131,11 +132,10 @@ export async function apply(ctx: Context, config: Config) {
             }));
             if (session.onebot && session.onebot.group_id) {
                 await session.onebot.sendGroupForwardMsg(session.onebot.group_id, nodeList);
-                return;
             } else if (session.onebot && session.onebot.user_id) {
                 await session.onebot.sendPrivateForwardMsg(session.onebot.user_id, nodeList);
-                return;
             }
+            return;
         }
         return msgList.join("\n\n");
     });
