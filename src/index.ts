@@ -45,7 +45,10 @@ export async function apply(ctx: Context, config: Config) {
                         return;
                     }
 
-                    await session.send([h.quote(session.messageId), h.image(fishingImageBase64)]);
+                    const fishingImageMessage = await session.send([
+                        h.quote(session.messageId),
+                        h.image(fishingImageBase64)
+                    ]);
                     const fish = await choice(ctx, session, config);
                     const waitTime = Math.floor(Math.random() * 6 + 1) * 1000;
                     await new Promise((resolve) => setTimeout(resolve, waitTime));
@@ -89,6 +92,10 @@ export async function apply(ctx: Context, config: Config) {
                             fishingResult.newLevel!,
                             config
                         )}] 等级...`;
+                    }
+
+                    if (fishingImageMessage && session.channelId) {
+                        await session.bot?.deleteMessage(session.channelId, fishingImageMessage[0]);
                     }
 
                     await session.send(h.quote(session.messageId) + fullResult);
