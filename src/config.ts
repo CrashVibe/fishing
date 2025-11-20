@@ -104,12 +104,12 @@ export const Config: Schema<Config> = Schema.object({
             display: Schema.string().default("普通").description("鱼竿显示名称"),
             upgrade_requirement: Schema.number().default(50).description("升级到下一级鱼竿所需的钓鱼次数"),
             quality_bonus: Schema.object({
-                rotten: Schema.number().default(1).description("腐烂品质鱼类的权重加成系数"),
-                moldy: Schema.number().default(1).description("发霉品质鱼类的权重加成系数"),
-                common: Schema.number().default(1).description("普通品质鱼类的权重加成系数"),
-                golden: Schema.number().default(1).description("金品质鱼类的权重加成系数"),
-                void: Schema.number().default(1).description("虚空品质鱼类的权重加成系数"),
-                hidden_fire: Schema.number().default(1).description("隐火品质鱼类的权重加成系数")
+                rotten: Schema.number().default(1.08).description("腐烂品质鱼类的权重加成系数"),
+                moldy: Schema.number().default(1.05).description("发霉品质鱼类的权重加成系数"),
+                common: Schema.number().default(0.98).description("普通品质鱼类的权重加成系数"),
+                golden: Schema.number().default(0.9).description("金品质鱼类的权重加成系数"),
+                void: Schema.number().default(0.75).description("虚空品质鱼类的权重加成系数"),
+                hidden_fire: Schema.number().default(0.6).description("隐火品质鱼类的权重加成系数")
             }).description("各品质鱼类的权重加成"),
             downgrade_probability: Schema.number().default(0.02).description("鱼竿降级的基础概率"),
             special_fish_bonus: Schema.number().default(1).description("特殊鱼类的概率加成系数")
@@ -119,12 +119,12 @@ export const Config: Schema<Config> = Schema.object({
             display: Schema.string().default("银").description("鱼竿显示名称"),
             upgrade_requirement: Schema.number().default(150).description("升级到下一级鱼竿所需的钓鱼次数"),
             quality_bonus: Schema.object({
-                rotten: Schema.number().default(0.9).description("腐烂品质鱼类的权重加成系数"),
-                moldy: Schema.number().default(0.95).description("发霉品质鱼类的权重加成系数"),
-                common: Schema.number().default(1.1).description("普通品质鱼类的权重加成系数"),
-                golden: Schema.number().default(1.2).description("金品质鱼类的权重加成系数"),
-                void: Schema.number().default(1.1).description("虚空品质鱼类的权重加成系数"),
-                hidden_fire: Schema.number().default(1.1).description("隐火品质鱼类的权重加成系数")
+                rotten: Schema.number().default(1.0).description("腐烂品质鱼类的权重加成系数"),
+                moldy: Schema.number().default(1.0).description("发霉品质鱼类的权重加成系数"),
+                common: Schema.number().default(1.0).description("普通品质鱼类的权重加成系数"),
+                golden: Schema.number().default(1.0).description("金品质鱼类的权重加成系数"),
+                void: Schema.number().default(1.0).description("虚空品质鱼类的权重加成系数"),
+                hidden_fire: Schema.number().default(1.0).description("隐火品质鱼类的权重加成系数")
             }).description("各品质鱼类的权重加成"),
             downgrade_probability: Schema.number().default(0.015).description("鱼竿降级的基础概率"),
             special_fish_bonus: Schema.number().default(1.1).description("特殊鱼类的概率加成系数")
@@ -134,12 +134,12 @@ export const Config: Schema<Config> = Schema.object({
             display: Schema.string().default("金").description("鱼竿显示名称"),
             upgrade_requirement: Schema.number().default(300).description("升级到下一级鱼竿所需的钓鱼次数"),
             quality_bonus: Schema.object({
-                rotten: Schema.number().default(0.8).description("腐烂品质鱼类的权重加成系数"),
-                moldy: Schema.number().default(0.9).description("发霉品质鱼类的权重加成系数"),
-                common: Schema.number().default(1.15).description("普通品质鱼类的权重加成系数"),
-                golden: Schema.number().default(1.4).description("金品质鱼类的权重加成系数"),
-                void: Schema.number().default(1.3).description("虚空品质鱼类的权重加成系数"),
-                hidden_fire: Schema.number().default(1.2).description("隐火品质鱼类的权重加成系数")
+                rotten: Schema.number().default(0.98).description("腐烂品质鱼类的权重加成系数"),
+                moldy: Schema.number().default(0.99).description("发霉品质鱼类的权重加成系数"),
+                common: Schema.number().default(0.99).description("普通品质鱼类的权重加成系数"),
+                golden: Schema.number().default(1.05).description("金品质鱼类的权重加成系数"),
+                void: Schema.number().default(1.1).description("虚空品质鱼类的权重加成系数"),
+                hidden_fire: Schema.number().default(1.15).description("隐火品质鱼类的权重加成系数")
             }).description("各品质鱼类的权重加成"),
             downgrade_probability: Schema.number().default(0.01).description("鱼竿降级的基础概率"),
             special_fish_bonus: Schema.number().default(1.25).description("特殊鱼类的概率加成系数")
@@ -149,12 +149,12 @@ export const Config: Schema<Config> = Schema.object({
             display: Schema.string().default("圣物").description("鱼竿显示名称"),
             upgrade_requirement: Schema.number().default(500).description("升级到下一级鱼竿所需的钓鱼次数"),
             quality_bonus: Schema.object({
-                rotten: Schema.number().default(0.7).description("腐烂品质鱼类的权重加成系数"),
-                moldy: Schema.number().default(0.85).description("发霉品质鱼类的权重加成系数"),
-                common: Schema.number().default(1.2).description("普通品质鱼类的权重加成系数"),
-                golden: Schema.number().default(1.6).description("金品质鱼类的权重加成系数"),
-                void: Schema.number().default(1.5).description("虚空品质鱼类的权重加成系数"),
-                hidden_fire: Schema.number().default(1.4).description("隐火品质鱼类的权重加成系数")
+                rotten: Schema.number().default(0.95).description("腐烂品质鱼类的权重加成系数"),
+                moldy: Schema.number().default(0.97).description("发霉品质鱼类的权重加成系数"),
+                common: Schema.number().default(0.98).description("普通品质鱼类的权重加成系数"),
+                golden: Schema.number().default(1.1).description("金品质鱼类的权重加成系数"),
+                void: Schema.number().default(1.15).description("虚空品质鱼类的权重加成系数"),
+                hidden_fire: Schema.number().default(1.25).description("隐火品质鱼类的权重加成系数")
             }).description("各品质鱼类的权重加成"),
             downgrade_probability: Schema.number().default(0.008).description("鱼竿降级的基础概率"),
             special_fish_bonus: Schema.number().default(1.5).description("特殊鱼类的概率加成系数")
@@ -166,12 +166,12 @@ export const Config: Schema<Config> = Schema.object({
                 .default(-1)
                 .description("升级到下一级鱼竿所需的钓鱼次数（-1表示最高级）"),
             quality_bonus: Schema.object({
-                rotten: Schema.number().default(0.6).description("腐烂品质鱼类的权重加成系数"),
-                moldy: Schema.number().default(0.8).description("发霉品质鱼类的权重加成系数"),
-                common: Schema.number().default(1.3).description("普通品质鱼类的权重加成系数"),
-                golden: Schema.number().default(1.8).description("金品质鱼类的权重加成系数"),
-                void: Schema.number().default(1.8).description("虚空品质鱼类的权重加成系数"),
-                hidden_fire: Schema.number().default(1.7).description("隐火品质鱼类的权重加成系数")
+                rotten: Schema.number().default(0.88).description("腐烂品质鱼类的权重加成系数"),
+                moldy: Schema.number().default(0.92).description("发霉品质鱼类的权重加成系数"),
+                common: Schema.number().default(0.95).description("普通品质鱼类的权重加成系数"),
+                golden: Schema.number().default(1.18).description("金品质鱼类的权重加成系数"),
+                void: Schema.number().default(1.3).description("虚空品质鱼类的权重加成系数"),
+                hidden_fire: Schema.number().default(1.5).description("隐火品质鱼类的权重加成系数")
             }).description("各品质鱼类的权重加成"),
             downgrade_probability: Schema.number().default(0.005).description("鱼竿降级的基础概率"),
             special_fish_bonus: Schema.number().default(2).description("特殊鱼类的概率加成系数")
@@ -193,7 +193,7 @@ export const Config: Schema<Config> = Schema.object({
                 "破防龙虾"
             ])
             .description("可能导致鱼竿降级的倒霉鱼名称列表"),
-        consecutive_bad_threshold: Schema.number().default(10).description("连续钓到低品质鱼的降级阈值"),
+        consecutive_bad_threshold: Schema.number().default(8).description("连续钓到低品质鱼的降级阈值"),
         inactivity_days: Schema.number().default(7).description("不活跃天数导致降级")
     }).description("鱼竿降级事件配置")
 });
@@ -306,7 +306,7 @@ export const FISH_CONFIG: Record<FishQuality, QualityConfig> = {
     [FishQuality.golden]: {
         name: "golden",
         display: "金",
-        weight: 5,
+        weight: 8,
         price: 0.15,
         lengthRange: [125, 800],
         fishes: [
@@ -345,7 +345,7 @@ export const FISH_CONFIG: Record<FishQuality, QualityConfig> = {
     [FishQuality.void]: {
         name: "void",
         display: "虚空",
-        weight: 3,
+        weight: 5,
         price: 0.2,
         lengthRange: [800, 4000],
         fishes: [
@@ -376,7 +376,7 @@ export const FISH_CONFIG: Record<FishQuality, QualityConfig> = {
     [FishQuality.hidden_fire]: {
         name: "hidden_fire",
         display: "隐火",
-        weight: 1,
+        weight: 3,
         price: 0.2,
         lengthRange: [1000, 4000],
         fishes: [

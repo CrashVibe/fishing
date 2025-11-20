@@ -1,14 +1,14 @@
-import { Context, Session } from "koishi";
-import { Config, QualityConfig, FishQuality, Fish, FishingRodLevel, FISH_CONFIG, FishInfo } from "./config";
 import {} from "@u1bot/koishi-plugin-fortune/src";
+import { Context, Session } from "koishi";
+import { Config, Fish, FISH_CONFIG, FishInfo, FishingRodLevel, FishQuality } from "./config";
 import {
     calculateFishingRodBonus,
     canUpgradeFishingRod,
-    upgradeFishingRod,
-    shouldDowngradeFishingRod,
     downgradeFishingRod,
+    getFishingRodDisplay,
+    shouldDowngradeFishingRod,
     updateConsecutiveBadCount,
-    getFishingRodDisplay
+    upgradeFishingRod
 } from "./fishing_rod";
 
 export async function choice(ctx: Context, session: Session, config: Config) {
@@ -89,10 +89,6 @@ function calculate_weight_increase(config: Config, luck_star_num: number): numbe
  * @param config 配置
  * @param userId 用户ID
  * @returns
- * - `weight`: 表示每种鱼的权重
- * - `adjustment_mode`: 标记是否有被幸运星调整/影响
- * - `luck_star_num`: 数字或null，表示幸运星数量（如果有的话）
- * - `fishing_rod_level`: 鱼竿等级
  */
 async function get_weight(ctx: Context, config: Config, userId: string) {
     let luck_star_num: number | null = null;
@@ -100,31 +96,60 @@ async function get_weight(ctx: Context, config: Config, userId: string) {
         luck_star_num = await ctx.fortune.get_user_luck_star(userId);
     }
 
-    // 获取用户鱼竿信息
     const userRecord = await ctx.database.get("fishing_record", { user_id: userId });
-    const fishingRodLevel = userRecord.length > 0 ? userRecord[0].fishing_rod_level : "normal";
+    const fishingRodLevel = userRecord.length > 0 ? userRecord[0].fishing_rod_level : FishingRodLevel.normal;
 
     const qualities = Object.values(FishQuality);
-    const adjusted_qualities = new Set([FishQuality.golden, FishQuality.hidden_fire, FishQuality.void]);
     let adjustment_mode = false;
+
+    const rodAdjustedWeight: Record<FishQuality, number> = {} as Record<FishQuality, number>;
+
+    for (const quality of qualities) {
+        const baseWeight = FISH_CONFIG[quality].weight;
+        const rodBonus = calculateFishingRodBonus(fishingRodLevel as any, quality, config);
+        rodAdjustedWeight[quality] = baseWeight * rodBonus;
+    }
 
     const weight: Record<FishQuality, number> = {} as Record<FishQuality, number>;
 
-    for (const quality of qualities) {
-        let final_weight = FISH_CONFIG[quality].weight;
+    if (luck_star_num !== null && luck_star_num > 0) {
+        adjustment_mode = true;
+        const luckMultiplier = calculate_weight_increase(config, luck_star_num);
 
-        // 幸运加成
-        if (luck_star_num !== null && adjusted_qualities.has(quality)) {
-            const increase = calculate_weight_increase(config, luck_star_num);
-            final_weight = Math.min(final_weight + increase, config.max_weight);
-            adjustment_mode = true;
+        for (const quality of qualities) {
+            let adjustedWeight = rodAdjustedWeight[quality];
+
+            if (quality === FishQuality.hidden_fire || quality === FishQuality.void) {
+                // 最高品质：大幅增加
+                adjustedWeight *= 1 + luckMultiplier * 2;
+            } else if (quality === FishQuality.golden) {
+                // 高品质：中等增加
+                adjustedWeight *= 1 + luckMultiplier * 1.5;
+            } else if (quality === FishQuality.common) {
+                // 普通品质：保持不变
+                adjustedWeight *= 1;
+            } else if (quality === FishQuality.moldy) {
+                // 低品质：轻微减少
+                adjustedWeight *= 1 - luckMultiplier * 0.3;
+            } else if (quality === FishQuality.rotten) {
+                // 最低品质：中等减少
+                adjustedWeight *= 1 - luckMultiplier * 0.5;
+            }
+
+            // 权重不为负
+            weight[quality] = Math.max(adjustedWeight, 0.01);
         }
+    } else {
+        for (const quality of qualities) {
+            weight[quality] = rodAdjustedWeight[quality];
+        }
+    }
 
-        // 鱼竿加成
-        const rodBonus = calculateFishingRodBonus(fishingRodLevel as any, quality, config);
-        final_weight *= rodBonus;
-
-        weight[quality] = final_weight;
+    const totalWeight = Object.values(weight).reduce((sum, w) => sum + w, 0);
+    if (totalWeight > 0) {
+        for (const quality of qualities) {
+            weight[quality] = (weight[quality] / totalWeight) * 100;
+        }
     }
 
     return { weight, adjustment_mode, luck_star_num, fishing_rod_level: fishingRodLevel };
@@ -190,7 +215,6 @@ export async function save_fish(
             }
         }
 
-        // 更新基本信息
         userRecord.frequency += 1;
         userRecord.total_fishing_count += 1;
         userRecord.last_fishing_time = new Date();

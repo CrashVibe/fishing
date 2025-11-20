@@ -100,8 +100,8 @@ export function shouldDowngradeFishingRod(
     // 检查连续钓到低品质鱼
     if (record.consecutive_bad_count >= config.downgrade_events.consecutive_bad_threshold) {
         const random = Math.random();
-        if (random < currentConfig.downgrade_probability * 1.5) {
-            // 连续倒霉时概率更高
+        const boostedProbability = Math.min(currentConfig.downgrade_probability * 5, 0.5);
+        if (random < boostedProbability) {
             return { shouldDowngrade: true, reason: "连续钓到低品质鱼" };
         }
     }
