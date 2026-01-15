@@ -16,7 +16,7 @@ import {
     get_quality_display,
     get_user_fishing_rod_info,
     save_fish
-} from "./data_source";
+} from "./services";
 import { getFishingRodDisplay, getFishingRodProgress } from "./fishing_rod";
 import { applyModel } from "./model";
 export { Config } from "./config";
